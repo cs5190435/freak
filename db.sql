@@ -20,15 +20,13 @@ CREATE TABLE Tweets (
     no_of_likes int DEFAULT NULL,
     no_of_retweets int DEFAULT NULL,
     no_of_reports int DEFAULT NULL,
-    PRIMARY KEY (tweet_id),
-    FOREIGN KEY (username) REFERENCES Users(username)
+    PRIMARY KEY (tweet_id)
 );
 
 DROP TABLE IF EXISTS Hashtags;
 CREATE TABLE Hashtags (
     tweet_id varchar(50) NOT NULL,
-    hashtag varchar(100) NOT NULL, 
-    FOREIGN KEY(tweet_id) REFERENCES Tweets(tweet_id)
+    hashtag varchar(100) NOT NULL 
 );
 
 
@@ -36,9 +34,12 @@ CREATE TABLE Hashtags (
 DROP TABLE IF EXISTS Links; 
 CREATE TABLE Links (
     tweet_id varchar(50) NOT NULL,
+    retweet_count int DEFAULT NULL,
     tweet_url varchar(10000) DEFAULT NULL, 
     url_expanded_url varchar(10000) DEFAULT NULL, 
-    media_url varchar(10000) DEFAULT NULL 
+    media_url varchar(10000) DEFAULT NULL, 
+    likes_count int DEFAULT NULL,
+    reports_count int DEFAULT NULL
 );
 
 
@@ -50,19 +51,34 @@ CREATE TABLE Edges (
     user2 varchar(25) DEFAULT NULL,
     type varchar(10) NOT NULL,
     tweet_id varchar(50) NOT NULL, 
-    width int DEFAULT NULL,
-    FOREIGN KEY(tweet_id) REFERENCES Tweets(tweet_id),
-    FOREIGN KEY (user1) REFERENCES Users(username),
-    FOREIGN KEY (user2) REFERENCES Users(username)
+    width int DEFAULT NULL
 );
 
--- Following Table --
+-- Following Table (user1 follows user2) --
 DROP TABLE IF EXISTS Following;
 CREATE TABLE Following (
     user1 varchar(25) NOT NULL, 
-    user2 varchar(25) NOT NULL,
-    FOREIGN KEY (user1) REFERENCES Users(username),
-    FOREIGN KEY (user2) REFERENCES Users(username)
+    user2 varchar(25) NOT NULL
+);
+
+--Liked Table--
+DROP TABLE IF EXISTS Liked;
+CREATE TABLE Liked (
+    username varchar(25) NOT NULL,
+    tweet_id varchar(50) NOT NULL
+);
+
+--Reported Table --
+DROP TABLE IF EXISTS Reported;
+CREATE TABLE Reported (
+    username varchar(25) NOT NULL,
+    tweet_id varchar(50) NOT NULL
+);
+
+--max id--
+DROP TABLE IF EXISTS maxid;
+CREATE TABLE maxid (
+    max int DEFAULT 0
 );
 
 END TRANSACTION;
