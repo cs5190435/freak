@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+     <style>
+       #button1{
+       width: 300px;
+       height: 40px;
+       }
+       #button2{
+       width: 300px;
+       height: 40px;
+       }
+       #container{
+       text-align: center;
+       }
+    </style>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title>{% block title %} {% endblock %}</title>
+  </head>
+  <body>
+
+	<p>{{ post[0] }} is the user name and {{ post[2] }} is the person's name</p>
+
+  </body>
+</html>
+
+
+@app.route('/likedtoo <tweetid>-<username>-<password>-<fullname>')
+def likedtoo(tweetid, username, password, fullname):
+    con = postgres_connection()
+    cur = con.cursor()
+    cur.execute('update links set num_likes = (num_likes + 1) where tweet_id = %s and not exists (select * from likedTable where user_name = %s and tweet_id = %s)',(tweetid,username,tweetid))
+    con.commit()
+    cur.execute('insert into likedTable values (%s, %s)',(username,tweetid))
+    con.commit()
+    cur.execute('select links.tweet_id, links.retweet_count, links.num_likes, links.num_reports, links.status_url, tweets.created_at, tweets.lang, tweets.type, tweets.user_name from links, (select TweetsTable.tweet_id, TweetsTable.created_at, TweetsTable.lang, TweetsTable.type, TweetsTable.user_name from TweetsTable, (select followee_user from FollowingTable where follower_user = %s) as foo where TweetsTable.user_name = foo.followee_user) as tweets where tweets.tweet_id = links.tweet_id',(username,))
+    twts = cur.fetchall()
+    con.close()
+    return render_template('user.html',post=[username, password, fullname],twts=twts)
+
+
+CREATE materialized VIEW trending AS select hashtags from(select hashtags,date,count(hashtags) from(select hashtags,date(created_at) from Hashtags,TweetsTable where Hashtags.tweet_id = TweetsTable.tweet_id) as info group by hashtags,date order by date,count(hashtags)) as final limit 10; 
+
+
+CREATE or REPLACE FUNCTION trend()
+RETURNS TRIGGER
+as $$
+begin
+	DROP materialized view trending;
+	CREATE materialized VIEW trending AS
+	select hashtags from(select hashtags,date,count(hashtags) from(select hashtags,date(created_at) from Hashtags,TweetsTable where Hashtags.tweet_id=TweetsTable.tweet_id) as info group by hashtags,date order by date,count(hashtags)) as final limit 10;
+	RETURN NULL;
+end; $$ language plpgsql;
+
+
+
+

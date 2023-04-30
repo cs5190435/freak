@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.topnav {
+  overflow: hidden;
+  background-color: #f2f2f2;
+}
+
+.topnav a {
+  float: left;
+  color: #000000;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.topnav a.active {
+  background-color: #0099ff;
+  color: white;
+}
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <a href="{{ url_for('user',username=username,fullname=fullname) }}">Home</a>
+  <a href="{{ url_for('profile',username=username,password=password,fullname=fullname) }}">Profile</a>
+  <a href="{{ url_for('followingtwo',username=username,password=password,fullname=fullname) }}">Followers</a>
+  <a href="{{ url_for('following',username=username,password=password,fullname=fullname) }}">Following</a>
+  <a href="{{ url_for('index') }}">Log-out</a>
+  <a class="active" href="{{ url_for('search',username=username,password=password,fullname=fullname) }}">Search username</a>
+  <a href="{{ url_for('searchtwo',username=username,password=password,fullname=fullname) }}">Search hashtags</a>
+
+</div>
+
+	<h1> Search results </h1>
+	<h4>Click on a particular username to view the details of that user</h4> <br>
+        {% for post in posts %}
+        <a href="{{ url_for('otheruser',username=username,password=password,fullname=fullname,otherusername=post[0]) }}">
+            <h3>{{ post[0] }}</h3>
+        </a>
+        <span class="badge badge-primary">{{ post[2] }}</span>
+        <hr>
+        {% endfor %}
+
+</body>
+</html>
+
+
+

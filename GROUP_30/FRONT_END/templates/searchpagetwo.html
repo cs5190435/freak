@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.topnav {
+  overflow: hidden;
+  background-color: #f2f2f2;
+}
+
+.topnav a {
+  float: left;
+  color: #000000;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.topnav a.active {
+  background-color: #0099ff;
+  color: white;
+}
+
+.btn-group button {
+  background-color: #f2f2f2; 
+  border: 1px solid black; 
+  color: black; 
+  padding: 15px 32px;
+  cursor: pointer;
+  float: left; 
+}
+
+
+.btn-group:after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.btn-group button:not(:last-child) {
+  border-right: none; 
+}
+
+.btn-group button:hover {
+  background-color: #0066ff;
+}
+
+
+.boxed {
+  border-radius: 25px;
+  border-style: solid;
+  border-color: #0099ff;
+  margin-left: 200px;
+  margin-right: 500px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 20px;
+} 
+
+
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <a href="{{ url_for('user',username=post[0],fullname=post[2]) }}">Home</a>
+  <a href="{{ url_for('profile',username=post[0],password=post[1],fullname=post[2]) }}">Profile</a>
+  <a href="{{ url_for('followingtwo',username=post[0],password=post[1],fullname=post[2]) }}">Followers</a>
+  <a href="{{ url_for('following',username=post[0],password=post[1],fullname=post[2]) }}">Following</a>
+  <a href="{{ url_for('index') }}">Log-out</a>
+  <a href="{{ url_for('search',username=post[0],password=post[1],fullname=post[2]) }}">Search username</a>
+  <a class="active" href="{{ url_for('searchtwo',username=post[0],password=post[1],fullname=post[2]) }}">Search hashtags</a>
+
+</div>
+
+	<h1> Search results </h1>
+	<h4>Tweets that have mentioned that hashtag</h4> <br>
+{% for twt in twts %}
+<div class="boxed">
+  <p>url link: {{twt[4]}}</p>
+  <p>posted by: {{twt[8]}}</p>
+  <p>created at: {{twt[5]}}</p>
+  <p>language: {{twt[6]}}</p>
+  <p>number of retweets: {{twt[1]}}</p>
+  <p>hashtag : {{searchhash}}</p>
+  <div class="btn-group" style="width:100%">
+  <button onclick="window.location.href='{{ url_for('liked',tweetid=twt[0],username=post[0],password=post[1],fullname=post[2]) }}'" style="width:20%">like - {{twt[2]}}</button>
+  <button onclick="window.location.href='{{ url_for('reported',tweetid=twt[0],username=post[0],password=post[1],fullname=post[2]) }}'" style="width:20%">report - {{twt[3]}}</button>
+  
+  <button onclick="window.location.href='{{ url_for('reply',tweetid=twt[0],username=post[0],password=post[1],fullname=post[2],secondusername=twt[8]) }}'" style="width:20%">reply</button>
+  
+  <button onclick="window.location.href='{{ url_for('retweet',tweetid=twt[0],username=post[0],password=post[1],fullname=post[2],secondusername=twt[8]) }}'" style="width:20%">retweet</button>
+  <button onclick="window.location.href='{{ url_for('show',tweetid=twt[0]) }}'" style="width:20%">Show Hashtags</button>
+  
+</div>
+</div> 
+{% endfor %}
+
+</body>
+</html>
+
+
+

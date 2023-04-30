@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.topnav {
+  overflow: hidden;
+  background-color: #f2f2f2;
+}
+
+.topnav a {
+  float: left;
+  color: #000000;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.topnav a.active {
+  background-color: #0099ff;
+  color: white;
+}
+
+.btn-group button {
+  background-color: #f2f2f2; 
+  border: 1px solid black; 
+  color: black; 
+  padding: 15px 32px;
+  cursor: pointer;
+  float: left; 
+}
+
+
+.btn-group:after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.btn-group button:not(:last-child) {
+  border-right: none; 
+}
+
+.btn-group button:hover {
+  background-color: #0099ff;
+}
+
+.boxed {
+  border-radius: 25px;
+  border-style: solid;
+  border-color: #0099ff;
+  margin-left: 200px;
+  margin-right: 500px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 20px;
+} 
+
+.alert {
+  padding: 20px;
+  background-color: #f2f2f2;
+  color: black;
+}
+
+.closebtn {
+  margin-left: 15px;
+  color: black;
+  font-weight: bold;
+  float: right;
+  font-size: 22px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.closebtn:hover {
+  color: black;
+}
+
+
+</style>
+</head>
+<body>
+
+<div class="topnav">
+  <a href="{{ url_for('user',username=post[0],fullname=post[1]) }}">Home</a>
+  <a class="active" href="{{ url_for('profile',username=post[0],password=post[2],fullname=post[1]) }}">Profile</a>
+  <a href="{{ url_for('followingtwo',username=post[0],password=post[2],fullname=post[1]) }}">Followers</a>
+  <a href="{{ url_for('following',username=post[0],password=post[2],fullname=post[1]) }}">Following</a>
+  <a href="{{ url_for('index') }}">Log-out</a>
+  <a href="{{ url_for('search',username=post[0],password=post[2],fullname=post[1]) }}">Search username</a>
+  <a href="{{ url_for('searchtwo',username=post[0],password=post[1],fullname=post[2]) }}">Search hashtag</a>
+
+</div>
+	<h2> Your Profile: </h2>
+        <h3>{{ post[0] }}</h3>
+        <span class="badge badge-primary">{{ post[1] }}</span>
+
+      {% with messages = get_flashed_messages() %}  
+         {% if messages %}  
+               {% for message in messages %} 
+                  <div class="alert">
+                    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
+                     <strong style="color:#ff0000;">{{message}}</strong>
+                  </div>
+               {% endfor %}  
+         {% endif %}  
+      {% endwith %}  
+
+        <hr>
+        
+<h5>Use the following delete/update buttons to delete or update your account respectively</h5> <br>
+
+
+        <div class="btn-group" style="width:30%">
+           <button onclick="window.location.href='{{ url_for('deleteacc',username=post[0]) }}'" style="width:50%">Delete Account</button>
+           <button onclick="window.location.href='{{ url_for('updateacc',username=post[0],fullname=post[1]) }}'" style="width:50%">Update Account</button>
+           
+           <button onclick="window.location.href='{{ url_for('newtweet',username=post[0],fullname=post[1],password=post[2]) }}'" style="width:50%">Tweet</button>
+           
+          <!-- <a href="{{ url_for('deleteacc',username=post[0]) }}" class="btn" role="button">Delete Account</a>
+           <a href="{{ url_for('updateacc',username=post[0],fullname=post[1]) }}" class="btn" role="button">Update Account</a>-->
+        </div>
+        <hr>
+
+<h4>The tweets posted by you:</h4>
+{% for twt in twts %}
+<div class="boxed">
+  <p>url link: {{twt[4]}}</p>
+  <p>created at: {{twt[5]}}</p>
+  <p>language: {{twt[6]}}</p>
+  <p>number of retweets: {{twt[1]}}</p>
+  <p>number of likes: {{twt[2]}}</p>
+  <p>number of reports: {{twt[3]}}</p>
+  <div class="btn-group" style="width:75%">
+  <button onclick="window.location.href='{{ url_for('deletetwt',tweetid=twt[0],username=post[0],fullname=post[1], password=post[2]) }}'" style="width:20%">delete</button>
+  <button onclick="window.location.href='{{ url_for('show',tweetid=twt[0]) }}'" style="width:30%">Show Hashtags</button>
+</div>
+</div> 
+{% endfor %}
+
+
+</body>
+</html>
+
+

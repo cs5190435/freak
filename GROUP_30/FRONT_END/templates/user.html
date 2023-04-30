@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+* {box-sizing: border-box;}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.topnav {
+  overflow: hidden;
+  background-color: #e9e9e9;
+}
+
+.topnav a {
+  float: left;
+  display: block;
+  color: black;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.topnav a.active {
+  background-color: #2196F3;
+  color: white;
+}
+
+.topnav .search-container {
+  float: right;
+}
+
+.topnav input[type=text] {
+  padding: 6px;
+  margin-top: 8px;
+  font-size: 17px;
+  border: none;
+}
+
+.topnav .search-container button {
+  float: right;
+  padding: 6px 10px;
+  margin-top: 8px;
+  margin-right: 16px;
+  background: #ddd;
+  font-size: 17px;
+  border: none;
+  cursor: pointer;
+}
+
+.topnav .search-container button:hover {
+  background: #ccc;
+}
+
+.btn-group button {
+  background-color: #f2f2f2; 
+  border: 1px solid black; 
+  color: black; 
+  padding: 15px 32px;
+  cursor: pointer;
+  float: left; 
+}
+
+
+.btn-group:after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.btn-group button:not(:last-child) {
+  border-right: none; 
+}
+
+.btn-group button:hover {
+  background-color: #0066ff;
+}
+
+
+.btn-groupn button {
+  background-color: #6699ff; 
+  border: 1px solid blue; 
+  color: black; 
+  padding: 15px 32px;
+  cursor: pointer;
+  float: left; 
+}
+
+
+.btn-groupn:after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.btn-groupn button:not(:last-child) {
+  border-right: none; 
+}
+
+.btn-groupn button:hover {
+  background-color: #0066ff;
+}
+
+
+.boxed {
+  border-radius: 25px;
+  border-style: solid;
+  border-color: #0099ff;
+  margin-left: 200px;
+  margin-right: 500px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 20px;
+} 
+
+
+@media screen and (max-width: 600px) {
+  .topnav .search-container {
+    float: none;
+  }
+  .topnav a, .topnav input[type=text], .topnav .search-container button {
+    float: none;
+    display: block;
+    text-align: left;
+    width: 100%;
+    margin: 0;
+    padding: 14px;
+  }
+  .topnav input[type=text] {
+    border: 1px solid #ccc;  
+  }
+}
+
+.alert {
+  padding: 20px;
+  background-color: #f2f2f2;
+  color: black;
+}
+
+.closebtn {
+  margin-left: 15px;
+  color: black;
+  font-weight: bold;
+  float: right;
+  font-size: 22px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.closebtn:hover {
+  color: black;
+}
+
+</style>
+</head>
+<body>
+
+<div class="topnav">
+
+  <a class="active" href="{{ url_for('user',username=post[0],fullname=post[2]) }}">Home</a>
+  <a href="{{ url_for('profile',username=post[0],password=post[1],fullname=post[2]) }}">Profile</a>
+  <a href="{{ url_for('followingtwo',username=post[0],password=post[1],fullname=post[2]) }}">Followers</a>
+  <a href="{{ url_for('following',username=post[0],password=post[1],fullname=post[2]) }}">Following</a>
+  <a href="{{ url_for('index') }}">Log-out</a>
+  <a href="{{ url_for('search',username=post[0],password=post[1],fullname=post[2]) }}">Search username</a>
+  <a href="{{ url_for('searchtwo',username=post[0],password=post[1],fullname=post[2]) }}">Search hashtag</a>
+
+</div>
+
+      {% with messages = get_flashed_messages() %}  
+         {% if messages %}  
+               {% for message in messages %} 
+                  <div class="alert">
+                    <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
+                     <strong style="color:#ff0000;">{{message}}</strong>
+                  </div>
+               {% endfor %}  
+         {% endif %}  
+      {% endwith %}  
+
+
+
+<div style="padding-left:16px">
+  <h2>My Home Page</h2>
+  <p>See the navigation bar - use search to search for a username, profile to see your own tweet and account details, followees, followers tabs to see the people you are following and who follow you respectively.</p>
+  
+</div>
+
+
+
+<div class="btn-groupn" style="width:50%">
+  <button onclick="window.location.href='{{ url_for('recommend',username=post[0],password=post[1],fullname=post[2]) }}'" style="width:25%">Recommendations</button>
+  <button onclick="window.location.href='{{ url_for('trend',username=post[0],password=post[1],fullname=post[2]) }}'" style="width:25%">Trending</button>
+</div>
+
+
+<hr>
+<p>Home page also contains the tweets posted by the people you are following. You can like, report, retweet or reply to those tweets.</p>
+{% for twt in twts %}
+<div class="boxed">
+  <p>url link: {{twt[4]}}</p>
+  <p>posted by: {{twt[8]}}</p>
+  <p>created at: {{twt[5]}}</p>
+  <p>language: {{twt[6]}}</p>
+  <p>number of retweets: {{twt[1]}}</p>
+  <div class="btn-group" style="width:100%">
+  <button onclick="window.location.href='{{ url_for('liked',tweetid=twt[0],username=post[0],password=post[1],fullname=post[2]) }}'" style="width:20%">like - {{twt[2]}}</button>
+  <button onclick="window.location.href='{{ url_for('reported',tweetid=twt[0],username=post[0],password=post[1],fullname=post[2]) }}'" style="width:20%">report - {{twt[3]}}</button>
+  
+  <button onclick="window.location.href='{{ url_for('reply',tweetid=twt[0],username=post[0],password=post[1],fullname=post[2],secondusername=twt[8]) }}'" style="width:20%">reply</button>
+  
+  <button onclick="window.location.href='{{ url_for('retweet',tweetid=twt[0],username=post[0],password=post[1],fullname=post[2],secondusername=twt[8]) }}'" style="width:20%">retweet</button>
+  <button onclick="window.location.href='{{ url_for('show',tweetid=twt[0]) }}'" style="width:20%">Show Hashtags</button>
+  
+</div>
+</div> 
+{% endfor %}
+
+</body>
+</html>
+
+
+
+
+
