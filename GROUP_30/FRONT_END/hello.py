@@ -193,7 +193,7 @@ def updateacc(username,fullname):
 def otheruser(username, password, fullname, otherusername):
     con = postgres_connection()
     cur = con.cursor()
-    cur.execute('select links.tweet_id, links.retweet_count, links.likes_count, links.reports_count, links.tweet_url, tweets.created_at, tweets.lang, tweets.type from links, (select tweet_id, created_at, lang, type from TweetsTable where user_name = %s) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(otherusername,))
+    cur.execute('select links.tweet_id, links.retweet_count, links.likes_count, links.reports_count, links.tweet_url, tweets.created_at, tweets.language, tweets.type from links, (select tweet_id, created_at, language, type from Tweets where username = %s) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(otherusername,))
     twts = cur.fetchall()
     con.close()
     return render_template('otheruser.html',username=username,password=password,fullname=fullname,otherusername=otherusername,twts=twts)
@@ -203,18 +203,18 @@ def otheruser(username, password, fullname, otherusername):
 def startfollow(username, password, fullname, otherusername):
     con = postgres_connection()
     cur = con.cursor()
-    cur.execute('select * from FollowingTable where followee_user = %s and follower_user = %s',(otherusername,username))
+    cur.execute('select * from Following where user2 = %s and user1 = %s',(otherusername,username))
     post = cur.fetchone()
     if post is None:
-        cur.execute('insert into FollowingTable values (%s,%s)',(otherusername,username))
+        cur.execute('insert into Following values (%s,%s)',(otherusername,username))
         con.commit()
-        cur.execute('select links.tweet_id, links.retweet_count, links.num_likes, links.num_reports, links.tweet_url, tweets.created_at, tweets.lang, tweets.type from links, (select tweet_id, created_at, lang, type from TweetsTable where user_name = %s) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(otherusername,))
+        cur.execute('select links.tweet_id, links.retweet_count, links.likes_count, links.reports_count, links.tweet_url, tweets.created_at, tweets.language, tweets.type from links, (select tweet_id, created_at, language, type from Tweets where username = %s) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(otherusername,))
         twts = cur.fetchall()
         con.close()
         flash('Now you are following the user')
         return render_template('otheruser.html',username=username,password=password,fullname=fullname,otherusername=otherusername,twts=twts)
     else:
-        cur.execute('select links.tweet_id, links.retweet_count, links.num_likes, links.num_reports, links.tweet_url, tweets.created_at, tweets.lang, tweets.type from links, (select tweet_id, created_at, lang, type from TweetsTable where user_name = %s) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(otherusername,))
+        cur.execute('select links.tweet_id, links.retweet_count, links.likes_count, links.reports_count, links.tweet_url, tweets.created_at, tweets.language, tweets.type from links, (select tweet_id, created_at, language, type from Tweets where username = %s) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(otherusername,))
         twts = cur.fetchall()
         con.close()
         flash('You are already following the user')
@@ -226,10 +226,10 @@ def newtweet(username, fullname, password):
     if request.method == 'POST':
         newusername = username
         newtype = '1. Tw'
-        newlang = request.form['lang']
+        newlang = request.form['language']
         newtweet_url = request.form['tweet_url']
-        newurls_expanded_url = request.form['tweet_url']
-        newmedia_expaned_url =request.form['media_expanded_url']
+        newurls_expanded_url = request.form['url_expanded_url']
+        newmedia_expaned_url =request.form['media_url']
         hashtags = request.form['hashtags']	    
         con = postgres_connection()
         cur = con.cursor()
@@ -240,7 +240,7 @@ def newtweet(username, fullname, password):
         tweetid = tweet[0]
         cur.execute('update maxid set max = max + 1')
         con.commit()
-        cur.execute('insert into TweetsTable values (%s, %s, %s, %s, %s)',(('x'+str(tweetid)), newusername, newtype, newcreated_at, newlang))
+        cur.execute('insert into Tweets values (%s, %s, %s, %s, %s)',(('x'+str(tweetid)), newusername, newtype, newcreated_at, newlang))
         con.commit()
         cur.execute('insert into links values (%s, 0, 0, 0, %s, %s, %s)',(('x'+str(tweetid)), newtweet_url, newurls_expanded_url, newmedia_expaned_url))
         con.commit()
@@ -249,7 +249,7 @@ def newtweet(username, fullname, password):
             for hashtag in arr:
                 cur.execute('insert into Hashtags values (%s, %s)',(('x'+str(tweetid)), hashtag))
                 con.commit()
-        cur.execute('select links.tweet_id, links.retweet_count, links.num_likes, links.num_reports, links.tweet_url, tweets.created_at, tweets.lang, tweets.type from links, (select tweet_id, created_at, lang, type from TweetsTable where user_name = %s) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(newusername,))
+        cur.execute('select links.tweet_id, links.retweet_count, links.likes_count, links.reports_count, links.tweet_url, tweets.created_at, tweets.language, tweets.type from links, (select tweet_id, created_at, language, type from Tweets where username = %s) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(newusername,))
         twts = cur.fetchall()
         con.close()
         return render_template('profile.html',post=[username,fullname,password],twts=twts)
@@ -261,10 +261,10 @@ def reply(tweetid, username, password, fullname, secondusername):
     if request.method == 'POST':
         newusername = username
         newtype = '4. Re'
-        newlang = request.form['lang']
+        newlang = request.form['language']
         newtweet_url = request.form['tweet_url']
-        newurls_expanded_url = request.form['tweet_url']
-        newmedia_expaned_url =request.form['media_expanded_url']	        
+        newurls_expanded_url = request.form['url_expanded_url']
+        newmedia_expaned_url =request.form['media_url']	        
         con = postgres_connection()
         cur = con.cursor()
         cur.execute('select now()::timestamptz(0)')
@@ -274,13 +274,13 @@ def reply(tweetid, username, password, fullname, secondusername):
         newtweetid = newtweet[0]
         cur.execute('update maxid set max = max + 1')
         con.commit()
-        cur.execute('insert into TweetsTable values (%s, %s, %s, %s, %s)',(('x'+str(newtweetid)), newusername, newtype, newcreated_at, newlang))
+        cur.execute('insert into Tweets values (%s, %s, %s, %s, %s)',(('x'+str(newtweetid)), newusername, newtype, newcreated_at, newlang))
         con.commit()
         cur.execute('insert into links values (%s, 0, 0, 0, %s, %s, %s)',(('x'+str(newtweetid)), newtweet_url, newurls_expanded_url, newmedia_expaned_url))
         con.commit()
         cur.execute('insert into edges values (%s, %s, %s, %s, 1)',(username, secondusername, newtype, ('x'+str(newtweetid))))
         con.commit()
-        cur.execute('select links.tweet_id, links.retweet_count, links.num_likes, links.num_reports, links.tweet_url, tweets.created_at, tweets.lang, tweets.type, tweets.user_name from links, (select TweetsTable.tweet_id, TweetsTable.created_at, TweetsTable.lang, TweetsTable.type, TweetsTable.user_name from TweetsTable, (select followee_user from FollowingTable where follower_user = %s) as foo where TweetsTable.user_name = foo.followee_user) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(newusername,))
+        cur.execute('select links.tweet_id, links.retweet_count, links.likes_count, links.reports_count, links.tweet_url, tweets.created_at, tweets.language, tweets.type, tweets.username from links, (select Tweets.tweet_id, Tweets.created_at, Tweets.language, Tweets.type, Tweets.username from Tweets, (select user2 from Following where user1 = %s) as foo where Tweets.username = foo.user2) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(newusername,))
         twts = cur.fetchall()
         con.close()
         return render_template('user.html', post=[username, password, fullname], twts=twts)
@@ -293,9 +293,9 @@ def retweet(tweetid, username, password, fullname, secondusername):
     cur = con.cursor()
     cur.execute('select now()::timestamptz(0)')
     newcreated_at = cur.fetchone()[0]
-    cur.execute('select lang, created_at from TweetsTable where tweet_id = %s',(tweetid,))
+    cur.execute('select language, created_at from Tweets where tweet_id = %s',(tweetid,))
     p = cur.fetchone()
-    cur.execute('select tweet_url, urls_expanded_url, media_expanded_url from links where tweet_id = %s',(tweetid,))
+    cur.execute('select tweet_url, url_expanded_url, media_url from links where tweet_id = %s',(tweetid,))
     q = cur.fetchone()
     cur.execute('select max from maxid')
     newtweet = cur.fetchone()
@@ -304,13 +304,13 @@ def retweet(tweetid, username, password, fullname, secondusername):
     con.commit()
     cur.execute('update links set retweet_count = (retweet_count + 1) where tweet_id = %s',(tweetid,))
     con.commit()	
-    cur.execute('insert into TweetsTable values (%s, %s, %s, %s, %s)',(('x'+str(newtweetid)), username, '3. RT', newcreated_at, p[0]))
+    cur.execute('insert into Tweets values (%s, %s, %s, %s, %s)',(('x'+str(newtweetid)), username, '3. RT', newcreated_at, p[0]))
     con.commit()
     cur.execute('insert into links values (%s,0,0,0,%s,%s,%s)',(('x'+str(newtweetid)), q[0], q[1], q[2]))
     con.commit()
     cur.execute('insert into edges values (%s, %s, %s, %s, 1)',(username, secondusername, '3. RT', ('x'+str(newtweetid))))
     con.commit()
-    cur.execute('select links.tweet_id, links.retweet_count, links.num_likes, links.num_reports, links.tweet_url, tweets.created_at, tweets.lang, tweets.type, tweets.user_name from links, (select TweetsTable.tweet_id, TweetsTable.created_at, TweetsTable.lang, TweetsTable.type, TweetsTable.user_name from TweetsTable, (select followee_user from FollowingTable where follower_user = %s) as foo where TweetsTable.user_name = foo.followee_user) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(username,))
+    cur.execute('select links.tweet_id, links.retweet_count, links.likes_count, links.reports_count, links.tweet_url, tweets.created_at, tweets.language, tweets.type, tweets.username from links, (select Tweets.tweet_id, Tweets.created_at, Tweets.language, Tweets.type, Tweets.username from Tweets, (select user2 from Following where user1 = %s) as foo where Tweets.username = foo.user2) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(username,))
     twts = cur.fetchall()
     con.close()
     return render_template('user.html',post=[username,password,fullname],twts=twts)
@@ -320,18 +320,18 @@ def retweet(tweetid, username, password, fullname, secondusername):
 def stopfollow(username, password, fullname, otherusername):
     con = postgres_connection()
     cur = con.cursor()
-    cur.execute('select * from FollowingTable where followee_user = %s and follower_user = %s',(otherusername,username))
+    cur.execute('select * from Following where user2 = %s and user1 = %s',(otherusername,username))
     post = cur.fetchone()
     if post is not None:
-        cur.execute('delete from FollowingTable where followee_user = %s and follower_user = %s',(otherusername,username))
+        cur.execute('delete from Following where user2 = %s and user1 = %s',(otherusername,username))
         con.commit()
-        cur.execute('select links.tweet_id, links.retweet_count, links.num_likes, links.num_reports, links.tweet_url, tweets.created_at, tweets.lang, tweets.type from links, (select tweet_id, created_at, lang, type from TweetsTable where user_name = %s) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(otherusername,))
+        cur.execute('select links.tweet_id, links.retweet_count, links.likes_count, links.reports_count, links.tweet_url, tweets.created_at, tweets.language, tweets.type from links, (select tweet_id, created_at, language, type from Tweets where username = %s) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(otherusername,))
         twts = cur.fetchall()
         con.close()
         flash('Now you are not following the user')
         return render_template('otheruser.html',username=username,password=password,fullname=fullname,otherusername=otherusername,twts=twts)
     else:
-        cur.execute('select links.tweet_id, links.retweet_count, links.num_likes, links.num_reports, links.tweet_url, tweets.created_at, tweets.lang, tweets.type from links, (select tweet_id, created_at, lang, type from TweetsTable where user_name = %s) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(otherusername,))
+        cur.execute('select links.tweet_id, links.retweet_count, links.likes_count, links.reports_count, links.tweet_url, tweets.created_at, tweets.language, tweets.type from links, (select tweet_id, created_at, language, type from Tweets where username = %s) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(otherusername,))
         twts = cur.fetchall()
         con.close()
         flash('You don\'t follow the user already')
@@ -342,14 +342,14 @@ def stopfollow(username, password, fullname, otherusername):
 def liked(tweetid, username, password, fullname):
     con = postgres_connection()
     cur = con.cursor()
-    cur.execute('select * from likedTable where user_name = %s and tweet_id = %s',(username,tweetid))
+    cur.execute('select * from liked where username = %s and tweet_id = %s',(username,tweetid))
     post = cur.fetchone()
     if post is None:
-        cur.execute('update links set num_likes = (num_likes + 1) where tweet_id = %s',(tweetid,))
+        cur.execute('update links set likes_count = (likes_count + 1) where tweet_id = %s',(tweetid,))
         con.commit()
-        cur.execute('insert into likedTable values (%s, %s)',(username,tweetid))
+        cur.execute('insert into liked values (%s, %s)',(username,tweetid))
         con.commit()
-    cur.execute('select links.tweet_id, links.retweet_count, links.num_likes, links.num_reports, links.tweet_url, tweets.created_at, tweets.lang, tweets.type, tweets.user_name from links, (select TweetsTable.tweet_id, TweetsTable.created_at, TweetsTable.lang, TweetsTable.type, TweetsTable.user_name from TweetsTable, (select followee_user from FollowingTable where follower_user = %s) as foo where TweetsTable.user_name = foo.followee_user) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc ',(username,))
+    cur.execute('select links.tweet_id, links.retweet_count, links.likes_count, links.reports_count, links.tweet_url, tweets.created_at, tweets.language, tweets.type, tweets.username from links, (select Tweets.tweet_id, Tweets.created_at, Tweets.language, Tweets.type, Tweets.username from Tweets, (select user2 from Following where user1 = %s) as foo where Tweets.username = foo.user2) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc ',(username,))
     twts = cur.fetchall()
     con.close()
     return render_template('user.html',post=[username, password, fullname],twts=twts)
@@ -359,14 +359,14 @@ def liked(tweetid, username, password, fullname):
 def likedother(tweetid, username, password, fullname, otherusername):
     con = postgres_connection()
     cur = con.cursor()
-    cur.execute('select * from likedTable where user_name = %s and tweet_id = %s',(username,tweetid))
+    cur.execute('select * from liked where username = %s and tweet_id = %s',(username,tweetid))
     post = cur.fetchone()
     if post is None:
-        cur.execute('update links set num_likes = (num_likes + 1) where tweet_id = %s',(tweetid,))
+        cur.execute('update links set likes_count = (likes_count + 1) where tweet_id = %s',(tweetid,))
         con.commit()
-        cur.execute('insert into likedTable values (%s, %s)',(username,tweetid))
+        cur.execute('insert into liked values (%s, %s)',(username,tweetid))
         con.commit()
-    cur.execute('select links.tweet_id, links.retweet_count, links.num_likes, links.num_reports, links.tweet_url, tweets.created_at, tweets.lang, tweets.type from links, (select tweet_id, created_at, lang, type from TweetsTable where user_name = %s) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(otherusername,))
+    cur.execute('select links.tweet_id, links.retweet_count, links.likes_count, links.reports_count, links.tweet_url, tweets.created_at, tweets.language, tweets.type from links, (select tweet_id, created_at, language, type from Tweets where username = %s) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(otherusername,))
     twts = cur.fetchall()
     con.close()
     return render_template('otheruser.html',username=username, password=password, fullname=fullname,otherusername=otherusername,twts=twts)
@@ -376,14 +376,14 @@ def likedother(tweetid, username, password, fullname, otherusername):
 def reported(tweetid, username, password, fullname):
     con = postgres_connection()
     cur = con.cursor()
-    cur.execute('select * from reportedTable where user_name = %s and tweet_id = %s',(username,tweetid))
+    cur.execute('select * from reported where username = %s and tweet_id = %s',(username,tweetid))
     post = cur.fetchone()
     if post is None:
-        cur.execute('update links set num_reports = (num_reports + 1) where tweet_id = %s',(tweetid,))
+        cur.execute('update links set reports_count = (reports_count + 1) where tweet_id = %s',(tweetid,))
         con.commit()
         cur.execute('insert into reportedTable values (%s, %s)',(username,tweetid))
         con.commit()
-    cur.execute('select links.tweet_id, links.retweet_count, links.num_likes, links.num_reports, links.tweet_url, tweets.created_at, tweets.lang, tweets.type, tweets.user_name from links, (select TweetsTable.tweet_id, TweetsTable.created_at, TweetsTable.lang, TweetsTable.type, TweetsTable.user_name from TweetsTable, (select followee_user from FollowingTable where follower_user = %s) as foo where TweetsTable.user_name = foo.followee_user) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(username,))
+    cur.execute('select links.tweet_id, links.retweet_count, links.likes_count, links.reports_count, links.tweet_url, tweets.created_at, tweets.language, tweets.type, tweets.username from links, (select Tweets.tweet_id, Tweets.created_at, Tweets.language, Tweets.type, Tweets.username from Tweets, (select user2 from Following where user1 = %s) as foo where Tweets.username = foo.user2) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(username,))
     twts = cur.fetchall()
     con.close()
     return render_template('user.html',post=[username, password, fullname],twts=twts)
@@ -392,11 +392,11 @@ def reported(tweetid, username, password, fullname):
 def reportedother(tweetid, username, password, fullname, otherusername):
     con = postgres_connection()
     cur = con.cursor()
-    cur.execute('update links set num_reports = (num_reports + 1) where tweet_id = %s and not exists (select * from reportedTable where user_name = %s and tweet_id = %s)',(tweetid,username,tweetid))
+    cur.execute('update links set reports_count = (reports_count + 1) where tweet_id = %s and not exists (select * from reported where username = %s and tweet_id = %s)',(tweetid,username,tweetid))
     con.commit()
-    cur.execute('insert into reportedTable values (%s, %s)',(username,tweetid))
+    cur.execute('insert into reported values (%s, %s)',(username,tweetid))
     con.commit()
-    cur.execute('select links.tweet_id, links.retweet_count, links.num_likes, links.num_reports, links.tweet_url, tweets.created_at, tweets.lang, tweets.type from links, (select tweet_id, created_at, lang, type from TweetsTable where user_name = %s) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(otherusername,))
+    cur.execute('select links.tweet_id, links.retweet_count, links.likes_count, links.reports_count, links.tweet_url, tweets.created_at, tweets.language, tweets.type from links, (select tweet_id, created_at, language, type from Tweets where username = %s) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(otherusername,))
     twts = cur.fetchall()
     con.close()
     return render_template('otheruser.html',username=username, password=password, fullname=fullname,otherusername=otherusername,twts=twts)
@@ -408,9 +408,9 @@ def deletetwt(tweetid, username, fullname, password):
     cur = con.cursor()
     cur.execute("delete from hashtags where tweet_id = %s", (tweetid,))
     con.commit()	
-    cur.execute('delete from TweetsTable where tweet_id = %s',(tweetid,))
+    cur.execute('delete from Tweets where tweet_id = %s',(tweetid,))
     con.commit()
-    cur.execute('select links.tweet_id, links.retweet_count, links.num_likes, links.num_reports, links.tweet_url, tweets.created_at, tweets.language, tweets.type from links, (select tweet_id, created_at, language, type from Tweets where username = %s) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(username,))
+    cur.execute('select links.tweet_id, links.retweet_count, links.likes_count, links.reports_count, links.tweet_url, tweets.created_at, tweets.language, tweets.type from links, (select tweet_id, created_at, language, type from Tweets where username = %s) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(username,))
     twts = cur.fetchall()
     con.close()
     return render_template('profile.html',post=[username,fullname,password],twts=twts)
