@@ -226,9 +226,9 @@ def newtweet(username, fullname, password):
     if request.method == 'POST':
         newusername = username
         newtype = '1. Tw'
-        newlang = request.form['language']
+        newlang = request.form['lang']
         newtweet_url = request.form['tweet_url']
-        newurls_expanded_url = request.form['url_expanded_url']
+        newurls_expanded_url = newtweet_url
         newmedia_expaned_url =request.form['media_url']
         hashtags = request.form['hashtags']	    
         con = postgres_connection()
@@ -240,9 +240,9 @@ def newtweet(username, fullname, password):
         tweetid = tweet[0]
         cur.execute('update maxid set max = max + 1')
         con.commit()
-        cur.execute('insert into Tweets values (%s, %s, %s, %s, %s)',(('x'+str(tweetid)), newusername, newtype, newcreated_at, newlang))
+        cur.execute('insert into Tweets values (%s, %s, %s, %s, %s)',(('x'+str(tweetid)), newcreated_at, newlang, newusername, newtype))
         con.commit()
-        cur.execute('insert into links values (%s, 0, 0, 0, %s, %s, %s)',(('x'+str(tweetid)), newtweet_url, newurls_expanded_url, newmedia_expaned_url))
+        cur.execute('insert into links values (%s, 0, %s, %s, %s, 0, 0)',(('x'+str(tweetid)), newtweet_url, newurls_expanded_url, newmedia_expaned_url))
         con.commit()
         arr = hashtags.split('#')
         if hashtags != "":
@@ -261,10 +261,13 @@ def reply(tweetid, username, password, fullname, secondusername):
     if request.method == 'POST':
         newusername = username
         newtype = '4. Re'
-        newlang = request.form['language']
+        newlang = request.form['lang']
         newtweet_url = request.form['tweet_url']
-        newurls_expanded_url = request.form['url_expanded_url']
+        #newtweet_url = '1'
+        newurls_expanded_url = newtweet_url
+        #newurls_expanded_url = request.form['url_expanded_url']
         newmedia_expaned_url =request.form['media_url']	        
+        #newmedia_expaned_url ='1'       
         con = postgres_connection()
         cur = con.cursor()
         cur.execute('select now()::timestamptz(0)')
@@ -274,9 +277,9 @@ def reply(tweetid, username, password, fullname, secondusername):
         newtweetid = newtweet[0]
         cur.execute('update maxid set max = max + 1')
         con.commit()
-        cur.execute('insert into Tweets values (%s, %s, %s, %s, %s)',(('x'+str(newtweetid)), newusername, newtype, newcreated_at, newlang))
+        cur.execute('insert into Tweets values (%s, %s, %s, %s, %s)',(('x'+str(newtweetid)), newcreated_at, newlang, newusername, newtype))
         con.commit()
-        cur.execute('insert into links values (%s, 0, 0, 0, %s, %s, %s)',(('x'+str(newtweetid)), newtweet_url, newurls_expanded_url, newmedia_expaned_url))
+        cur.execute('insert into links values (%s, 0, %s, %s, %s, 0, 0)',(('x'+str(newtweetid)), newtweet_url, newurls_expanded_url, newmedia_expaned_url))
         con.commit()
         cur.execute('insert into edges values (%s, %s, %s, %s, 1)',(username, secondusername, newtype, ('x'+str(newtweetid))))
         con.commit()
@@ -304,9 +307,10 @@ def retweet(tweetid, username, password, fullname, secondusername):
     con.commit()
     cur.execute('update links set retweet_count = (retweet_count + 1) where tweet_id = %s',(tweetid,))
     con.commit()	
-    cur.execute('insert into Tweets values (%s, %s, %s, %s, %s)',(('x'+str(newtweetid)), username, '3. RT', newcreated_at, p[0]))
+    #cur.execute('insert into Tweets values (%s, %s, %s, %s, %s)',(('x'+str(newtweetid)), username, '3. RT', newcreated_at, p[0]))
+    cur.execute('insert into Tweets values (%s, %s, %s, %s, %s, 0, 0)',(('x'+str(newtweetid)), newcreated_at, username, '3. RT', p[0]))
     con.commit()
-    cur.execute('insert into links values (%s,0,0,0,%s,%s,%s)',(('x'+str(newtweetid)), q[0], q[1], q[2]))
+    cur.execute('insert into links values (%s,0,%s,%s,%s,0,0)',(('x'+str(newtweetid)), q[0], q[1], q[2]))
     con.commit()
     cur.execute('insert into edges values (%s, %s, %s, %s, 1)',(username, secondusername, '3. RT', ('x'+str(newtweetid))))
     con.commit()
@@ -381,7 +385,7 @@ def reported(tweetid, username, password, fullname):
     if post is None:
         cur.execute('update links set reports_count = (reports_count + 1) where tweet_id = %s',(tweetid,))
         con.commit()
-        cur.execute('insert into reportedTable values (%s, %s)',(username,tweetid))
+        cur.execute('insert into reported values (%s, %s)',(username,tweetid))
         con.commit()
     cur.execute('select links.tweet_id, links.retweet_count, links.likes_count, links.reports_count, links.tweet_url, tweets.created_at, tweets.language, tweets.type, tweets.username from links, (select Tweets.tweet_id, Tweets.created_at, Tweets.language, Tweets.type, Tweets.username from Tweets, (select user2 from Following where user1 = %s) as foo where Tweets.username = foo.user2) as tweets where tweets.tweet_id = links.tweet_id order by tweets.created_at desc',(username,))
     twts = cur.fetchall()
