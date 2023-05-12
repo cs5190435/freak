@@ -100,7 +100,7 @@ def user(username, fullname):
 def following(username,password,fullname):
     con = postgres_connection()
     cur = con.cursor()
-    cur.execute('select Users.username, Users.fullname from Following, Users where Following.user1 = %s and Following.user2 = Users.username limit 10', (username,))
+    cur.execute('select Users.username, Users.fullname from Following, Users where Following.user1 = %s and Following.user2 = Users.username limit 100', (username,))
     posts = cur.fetchall()
     con.close()
     return render_template('following.html', posts=posts, username = username, fullname = fullname, password=password)
@@ -110,7 +110,7 @@ def following(username,password,fullname):
 def followingtwo(username,password,fullname):
     con = postgres_connection()
     cur = con.cursor()
-    cur.execute('select Users.username, Users.fullname from Following, Users where Following.user2 = %s and Users.username = Following.user1 limit 10', (username,))
+    cur.execute('select Users.username, Users.fullname from Following, Users where Following.user2 = %s and Users.username = Following.user1 limit 100', (username,))
     posts = cur.fetchall()
     con.close()
     return render_template('followingtwo.html', posts=posts, username = username, fullname=fullname,password=password)
