@@ -51,7 +51,7 @@ body {
 
 </div>
 
-	<h1> My Followees </h1>
+	<h1> People I am following </h1>
 	<h4>Click on a particular username to view the details of that user</h4>
         {% for post in posts %}
         <a href="{{ url_for('otheruser',username=username,password=password,fullname=fullname,otherusername=post[0]) }}">
