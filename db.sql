@@ -78,7 +78,8 @@ CREATE TABLE Reported (
 --max id--
 DROP TABLE IF EXISTS maxid;
 CREATE TABLE maxid (
-    max int DEFAULT 0
+    max integer
 );
 
 END TRANSACTION;
+INSERT INTO maxid (max) VALUES (0);
